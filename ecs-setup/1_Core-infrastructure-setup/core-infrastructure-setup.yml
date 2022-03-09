@@ -22,7 +22,8 @@ Resources:
       EnableDnsHostnames: true
       CidrBlock: !FindInMap ['SubnetConfig', 'VPC', 'CIDR'] # get the CIDR value from Mappings.SubnetConfig.VPC.CIDR
       Tags:
-        - Name: ${EnvironmentName}-VPC-A
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-vpc-a
 
   PublicSubnetOne:
     Type: AWS::EC2::Subnet
@@ -35,7 +36,8 @@ Resources:
       CidrBlock: !FindInMap ['SubnetConfig', 'PublicSubnetOne', 'CIDR']
       MapPublicIpOnLaunch: true
       Tags:
-        - Name: ${EnvironmentName}-Subnet-Public-1A
+        - Key: Name 
+          Value: !Sub ${EnvironmentName}-subnet-public-1a
 
   PublicSubnetTwo:
     Type: AWS::EC2::Subnet
@@ -48,12 +50,16 @@ Resources:
       CidrBlock: !FindInMap ['SubnetConfig', 'PublicSubnetTwo', 'CIDR']
       MapPublicIpOnLaunch: true
       Tags:
-        - Name: ${EnvironmentName}-Subnet-Public-1B
+        - Key: Name 
+          Value: !Sub ${EnvironmentName}-subnet-public-1b
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
-    Tags:
-      - Name: ${EnvironmentName}-IGW
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-igw
+
   GatewayAttachement:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -65,20 +71,30 @@ Resources:
     Properties:
       VpcId: !Ref 'VPC'
       Tags:
-      - Name: ${EnvironmentName}-RouteTable-A
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-routetable-a
   
   PublicRouteTableB:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref 'VPC'
       Tags:
-      - Name: ${EnvironmentName}-RouteTable-A
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-routetable-b
 
-  PublicRoute:
+  PublicRouteOnRouteTableA:
     Type: AWS::EC2::Route
     DependsOn: GatewayAttachement
     Properties:
       RouteTableId: !Ref 'PublicRouteTableA'
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref 'InternetGateway'
+
+  PublicRouteOnRouteTableB:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachement
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTableB'
       DestinationCidrBlock: '0.0.0.0/0'
       GatewayId: !Ref 'InternetGateway'
 
